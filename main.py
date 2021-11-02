@@ -1,6 +1,6 @@
 import pandas as pd
 from iPSC_DEAP_fit import iPSC_EA_fit_normal
-from iPSC_DEAP_fit import iPSC_EA_fit_restart
+from iPSC_DEAP_fit_rstrt import iPSC_EA_fit_restart
 
 
 def main(args):
@@ -58,7 +58,8 @@ def main(args):
         for i in filenames:
             print('\t' + i)
 
-        iPSC_EA_fit_restart(outdir, pop_, hof_, NGEN)
+        NGEN_TOTAL = NGEN + previous_gens
+        iPSC_EA_fit_restart(outdir, pop_, hof_, NGEN, NGEN_TOTAL)
         del filenames, args
 
 

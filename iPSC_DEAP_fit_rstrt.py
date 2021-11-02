@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from scipy.stats import lognorm
-from scipy.stats import loguniform
 from run_dclamp_simulation import run_ind_dclamp
 from cell_recording import ExperimentalAPSet
 from multiprocessing import Pool
@@ -15,28 +14,37 @@ from deap import creator
 from deap import tools
 
 
-def generateES(ind_clss, strategy_clss, size):
-    """This function constructs an individual and its strategy.
-    The regular paramters (ind) are sampled from the log-uniform distribution
-    over the interval [0.01,5.0]. There is an additional parameter (phi)
-    that corresponds to the leak of the injected dynamic-clamp current.
-    Phi is sampled from from the uniform distribution and index is 0.
-
-    The strategy object is the mutation strength of each paramter.
-    It is sampled from the log-normal distribution."""
-
-    # Construct the parameters in the individual
-    phi = list(np.random.uniform(low=0.0, high=1.0, size=1))
-    params = phi + list(loguniform.rvs(a=1e-2, b=5.0, size=(size-1)))
-    ind = ind_clss(params)
-
-    # Construct the strategy object.
-    # The lognormal shape parameter is 0.5 just out of choice.
-    phi = list(np.random.uniform(low=0.0, high=1.0, size=1))
-    params = phi + list(lognorm.rvs(s=0.5, size=(size-1)))
-    ind.strategy = strategy_clss(params)
+def rstrtES(ind_clss, strategy_clss, fit_clss, data):
+    """This function constructs an individual from a prior EA population."""
+    # Pass parameter to individual class
+    ind = ind_clss(data[0])
+    ind.strategy = strategy_clss(data[1])
+    ind.fitness = fit_clss(data[2])
 
     return ind
+
+
+def initRstrtPop(container, rstInd, pop_data):
+    pop = []
+    N = pop_data[0].shape[0]
+    for i in range(N):
+        ind_data = (list(pop_data[0].iloc[0, :]), list(pop_data[1].iloc[0, :]),
+                    tuple(pop_data[2].iloc[0, :]))
+        pop.append(rstInd(data=ind_data))
+    return container(pop)
+
+
+def rstrtHOF(hof, ind_clss, fit_clss, data):
+    """This function constructs a HallOfFame from a prior EA optimization."""
+    if (data[0].shape[0] == len(data[1])):
+        for i in range(data[0].shape[0]):
+            ind = ind_clss(data[0].iloc[i, :])
+            ind.fitness = fit_clss(data[1].iloc[i])
+            hof.insert(ind)
+        return hof
+    else:
+        print('\tHallofFame did not load successfully.')
+        return(hof)
 
 
 def fitness(ind, ExperAPSet):
@@ -74,22 +82,19 @@ def cxESBlend(ind1, ind2, alpha):
     return ind1, ind2
 
 
-def iPSC_EA_fit_normal(outdir, MU=4, LAMBDA=8, NGEN=3):
+def iPSC_EA_fit_restart(outdir, pop_, hof_, NGEN, NGEN_TOTAL):
     """This function applies the DEAP algorithm (mu,lambda) to fit
     the Kernik-Clancy model to an experimental AP data set.
     The 14 membrane conductance parameters are optimized.
-    The fitness is defined as the sum of RMSD from each AP."""
+    The fitness is defined as the sum of RMSD from each AP.
+    iPSC_EA_fit_restart extends the optimization EA from a
+    prior optimization."""
 
     #  DEAP (mu,lambda) settings
     #  MU: Population size at the end of each generation including gen(0)
     #  LAMBDA: Number of new individuals generated per generation
     #  NGEN: Number of generations
     #  NHOF: Number of Hall of Fame individuals
-    NHOF = int((0.1) * LAMBDA * NGEN)
-    if (NHOF < 1):
-        NHOF = 1
-
-    NUM_PARAMS = 14  # Used by the EA to determine size of array
 
     PARAM_NAMES = ['phi', 'G_K1', 'G_Kr', 'G_Ks', 'G_to', 'P_CaL',
                    'G_CaT', 'G_Na', 'G_F', 'K_NaCa', 'P_NaK',
@@ -114,9 +119,10 @@ def iPSC_EA_fit_normal(outdir, MU=4, LAMBDA=8, NGEN=3):
     toolbox = base.Toolbox()
 
     # The (mu,lambda)_EA the toolbox must contain: mate, mutate, select, evaluate.
-    # These functions allow the toolbox to populate a population with individuals.
-    toolbox.register("individual", generateES, creator.Individual, creator.Strategy, NUM_PARAMS)
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    # Toolbox functions initiate a population with individuals from prior population.
+    toolbox.register("individual", rstrtES, creator.Individual, creator.Strategy,
+                     creator.FitnessMin, data=None)
+    toolbox.register("population", initRstrtPop, list, toolbox.individual, pop_)
 
     # These functions allow the population to evolve.
     toolbox.register("mate", cxESBlend, alpha=0.3)
@@ -137,11 +143,16 @@ def iPSC_EA_fit_normal(outdir, MU=4, LAMBDA=8, NGEN=3):
     p = Pool()
     toolbox.register("map", p.map)
 
-    hof = tools.HallOfFame(NHOF)
+    pop = toolbox.population()
+
+    MU = len(pop)
+    LAMBDA = 2 * MU
+    NHOF = int((0.1) * LAMBDA * NGEN_TOTAL)
+
+    hof = rstrtHOF(tools.HallOfFame(NHOF), creator.Individual, creator.FitnessMin, hof_)
     hof_fitness = []
     pop_fitness = []
     pop_strategy = []
-    pop = toolbox.population(n=MU)
 
     print('(mu,lambda): ('+str(MU)+','+str(LAMBDA)+')')
     print('HoF size: '+str(NHOF))
@@ -191,3 +202,4 @@ def iPSC_EA_fit_normal(outdir, MU=4, LAMBDA=8, NGEN=3):
     pop_strategy_df = pd.DataFrame(pop_strategy, columns=PARAM_NAMES)
     filename = outdir+'pop_strategy_'+dt+'.txt'
     pop_strategy_df.to_csv(filename, sep=' ', index=False)
+

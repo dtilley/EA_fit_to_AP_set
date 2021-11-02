@@ -134,11 +134,11 @@ toolbox.register("map", p.map)
 #  Algorithm specific settings
 MU = 5  # Population size at the end of each generation including gen(0)
 LAMBDA = 10  # Number of new individuals generated per generation
-N_GEN = 2
-N_HOF = int((0.1) * LAMBDA * N_GEN)
-#N_HOF = 5
+NGEN = 2
+NHOF = int((0.1) * LAMBDA * NGEN)
+#NHOF = 5
 
-hof = tools.HallOfFame(N_HOF)
+hof = tools.HallOfFame(NHOF)
 pop = toolbox.population(n=MU)
 #pop_first_df = pd.DataFrame(pop, columns=PARAM_NAMES)
 #pop_first_df.to_csv('pop_first_'+dt+'.txt', sep=' ', index=False)
@@ -146,7 +146,7 @@ pop = toolbox.population(n=MU)
 print('(mu,lambda): ('+str(MU)+','+str(LAMBDA)+')')
 
 pop, logbook = eaMuCommaLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
-                               cxpb=0.6, mutpb=0.3, ngen=N_GEN, stats=stats,
+                               cxpb=0.6, mutpb=0.3, ngen=NGEN, stats=stats,
                                halloffame=hof, verbose=False)
 
 now = datetime.now()
