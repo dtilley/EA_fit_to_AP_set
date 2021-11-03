@@ -168,7 +168,7 @@ def iPSC_EA_fit_restart(outdir, pop_, hof_, NGEN, NGEN_TOTAL):
 
     pop, logbook = eaMuCommaLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
                                    cxpb=0.6, mutpb=0.3, ngen=NGEN, stats=stats,
-                                   halloffame=hof, verbose=False)
+                                   halloffame=hof, verbose=False, writeGENS=True)
 
     now = datetime.now()
     dt = now.strftime("%m%d%y_%H%M%S")

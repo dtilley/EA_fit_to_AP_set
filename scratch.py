@@ -8,7 +8,7 @@ from cell_recording import ExperimentalAPSet
 from multiprocessing import Pool
 from scipy.stats import lognorm
 
-from deap import algorithms
+from algorithms import eaMuCommaLambda
 from deap import base
 from deap import creator
 from deap import tools
@@ -70,7 +70,7 @@ def initRstrtPop(container, rstInd, pop_data):
 
 
 def fitness(ind, ExperAPSet):
-    model_APSet = run_ind_dclamp(ind, dc_ik1=ExperAPSet.dc_ik1, printIND=True)
+    model_APSet = run_ind_dclamp(ind, dc_ik1=ExperAPSet.dc_ik1, printIND=False)
     rmsd_total = (sum(ExperAPSet.score(model_APSet).values()),)
     return rmsd_total
 
@@ -147,6 +147,6 @@ toolbox.register("map", p.map)
 
 print('(mu,lambda): ('+str(MU)+','+str(LAMBDA)+')')
 
-pop, logbook = algorithms.eaMuCommaLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
-                                          cxpb=0.6, mutpb=0.3, ngen=NGEN, stats=stats,
-                                          halloffame=hof, verbose=False)
+pop, logbook = eaMuCommaLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
+                               cxpb=0.6, mutpb=0.3, ngen=NGEN, stats=stats,
+                               halloffame=hof, verbose=False, writeGENS=True)
