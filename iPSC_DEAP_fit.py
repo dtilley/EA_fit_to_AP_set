@@ -150,9 +150,9 @@ def iPSC_EA_fit_normal(outdir, MU=4, LAMBDA=8, NGEN=3):
     now = datetime.now()
     dt = now.strftime("%m%d%y_%H%M%S")
     print('Run start time: '+dt)
-    # Write first population to disk
+    # Write first population to disk (GEN 0)
     pop_first_df = pd.DataFrame(pop, columns=PARAM_NAMES)
-    filename = outdir+'pop_first_'+dt+'.txt'
+    filename = outdir+'pop_0_'+dt+'.txt'
     pop_first_df.to_csv(filename, sep=' ', index=False)
 
     pop, logbook = eaMuCommaLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
