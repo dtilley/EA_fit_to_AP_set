@@ -106,8 +106,8 @@ def iPSC_EA_fit_restart(outdir, pop_, hof_, NGEN, NGEN_TOTAL):
     print('AP Set Path: '+path_to_aps)
     cell_2 = ExperimentalAPSet(path=path_to_aps, file_prefix='cell_2_',
                                file_suffix='_SAP.txt', cell_id=2, dc_ik1=1.0)
-    print('\t Experimental Cell ID: '+str(cell_2.cell_id))
-    print('\t Experimental DC IK1: '+str(cell_2.dc_ik1))
+    print('\tExperimental Cell ID: '+str(cell_2.cell_id))
+    print('\tExperimental DC IK1: '+str(cell_2.dc_ik1))
     
     # Define classes for EA with DEAP libaries. #
     creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
