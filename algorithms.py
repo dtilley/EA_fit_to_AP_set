@@ -438,14 +438,11 @@ def eaMuCommaLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
                 pop_fitness.append(i.fitness.values[0])
                 pop_strategy.append(i.strategy)
             pop_df = pd.DataFrame(population)
-            pop_df.to_csv('pop_'+str(gen)+'.txt', sep=' ', index=False,
-                          header=False)
+            pop_df.to_csv('pop_'+str(gen)+'.txt', sep=' ', index=False)
             pop_fitness_df = pd.DataFrame(pop_fitness, columns=["fitness"])
-            pop_fitness_df.to_csv('pop_fitness_'+str(gen)+'.txt', sep=' ',
-                                  index=False, header=False)
+            pop_fitness_df.to_csv('pop_fitness_'+str(gen)+'.txt', sep=' ', index=False)
             pop_strategy_df = pd.DataFrame(pop_strategy)
-            pop_strategy_df.to_csv('pop_strategy_'+str(gen)+'.txt', sep=' ',
-                                   index=False, header=False)
+            pop_strategy_df.to_csv('pop_strategy_'+str(gen)+'.txt', sep=' ', index=False)
 
         # Update the statistics with the new population
         record = stats.compile(population) if stats is not None else {}

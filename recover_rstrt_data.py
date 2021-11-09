@@ -6,7 +6,7 @@ import time
 import datetime
 from shutil import copy2
 
-#indir = '/home/drew/projects/experimental-AP-Fit/tmp/GEN_DATA'
+
 def main(indir):
     filenames = os.listdir(indir)
     popfiles = list(filter(lambda k: 'fitness' not in k, filenames))
@@ -40,10 +40,14 @@ def main(indir):
 
     # Copy final generation data
     fout = 'pop_final_' + dt + suffix
-    copy2(os.path.join(indir, filename), fout)
+    fin_df = pd.read_csv(filename, delimiter=' ')
+    fin_df.columns = PARAM_NAMES
+    fin_df.to_csv(fout, sep=' ', index=False)
     filename = strtgy_prefix + str(final_ndx) + suffix
     fout = strtgy_prefix + dt + suffix
-    copy2(os.path.join(indir, filename), fout)
+    fin_df = pd.read_csv(filename, delimiter=' ')
+    fin_df.columns = PARAM_NAMES
+    fin_df.to_csv(fout, sep=' ', index=False)
     filename = ftnss_prefix + str(final_ndx) + suffix
     fout = ftnss_prefix + dt + suffix
     copy2(os.path.join(indir, filename), fout)
