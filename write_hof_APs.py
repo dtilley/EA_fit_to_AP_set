@@ -1,6 +1,5 @@
 import sys
 import os
-import numpy as np
 import pandas as pd
 from multiprocessing import Pool
 
@@ -29,9 +28,9 @@ def main(argv):
         if (hof.shape[1] != 14):
             print('Number of model paramters unequal to hof_file. Check inputs.')
             return
-        
+
         NUM_MODELS = int(argv[1])
-        
+
         # Load in experimental AP set
         # Cell 1 recorded 12/24/20 Ishihara dynamic-clamp 0.75 pA/pF
         path_to_aps = '/home/drew/projects/iPSC-GA_Aug21/cell_1/AP_set'
@@ -78,6 +77,7 @@ def main(argv):
         else:
             print("Format Error.")
             return
-            
+
+
 if __name__ == '__main__':
     main(sys.argv[1:])
